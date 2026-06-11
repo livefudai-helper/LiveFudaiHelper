@@ -2,9 +2,13 @@ package com.example.livefudai
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.widget.Toast
 import kotlinx.coroutines.*
 
 /**
@@ -51,6 +55,24 @@ class FudaiAccessibilityService : AccessibilityService() {
 
         this.serviceInfo = serviceInfo
         Log.d(TAG, "无障碍服务已连接，开始监听直播间")
+
+        // 启动前台服务（保持后台运行）
+        val intent = Intent(this, FudaiForegroundService::class.java).apply {
+            action = FudaiForegroundService.ACTION_START
+        }
+        startService(intent)
+
+        // 提示用户服务已启动
+        showToast("福袋助手已启动，进入直播间即可自动检测")
+    }
+
+    /**
+     * 在主线程显示 Toast
+     */
+    private fun showToast(message: String) {
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -59,6 +81,11 @@ class FudaiAccessibilityService : AccessibilityService() {
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
                 Log.d(TAG, "界面切换: ${event.packageName}")
+                // 只在抖音/快手/QQ直播切换时提示
+                val pkg = event.packageName?.toString() ?: ""
+                if (pkg.contains("aweme") || pkg.contains("kuaishou") || pkg.contains("qq")) {
+                    showToast("检测到直播APP，正在扫描福袋...")
+                }
                 checkForFudai()
             }
 
@@ -114,13 +141,12 @@ class FudaiAccessibilityService : AccessibilityService() {
      */
     private fun findFudaiNodes(root: AccessibilityNodeInfo): List<AccessibilityNodeInfo> {
         val results = mutableListOf<AccessibilityNodeInfo>()
+        val keywords = listOf("福袋", "抽奖", "幸运福袋", "超级福袋", "抢福袋", "参与福袋")
 
-        // 方法1: 通过文本匹配（"福袋"、"抽奖"等关键词）
-        val textMatches = root.findAccessibilityNodeInfosByText("福袋")
-        results.addAll(textMatches)
-
-        val lotteryMatches = root.findAccessibilityNodeInfosByText("抽奖")
-        results.addAll(lotteryMatches)
+        for (keyword in keywords) {
+            val matches = root.findAccessibilityNodeInfosByText(keyword)
+            results.addAll(matches)
+        }
 
         return results.distinctBy { it.windowId }
     }
@@ -392,6 +418,14 @@ class FudaiAccessibilityService : AccessibilityService() {
         super.onDestroy()
         monitoringJob?.cancel()
         ocrManager.release()
+
+        // 停止前台服务
+        val intent = Intent(this, FudaiForegroundService::class.java).apply {
+            action = FudaiForegroundService.ACTION_STOP
+        }
+        startService(intent)
+
+        showToast("福袋助手已停止")
         Log.d(TAG, "福袋服务销毁")
     }
 }
