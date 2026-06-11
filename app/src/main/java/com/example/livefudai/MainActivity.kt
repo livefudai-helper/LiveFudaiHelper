@@ -15,30 +15,30 @@ import com.example.livefudai.databinding.ActivityMainBinding
  * 主界面 - 配置和启动福袋自动参与服务
  */
 class MainActivity : AppCompatActivity() {
-    
+
     companion object {
         private const val TAG = "MainActivity"
         private const val REQUEST_CODE_ACCESSIBILITY = 1001
     }
-    
+
     private lateinit var binding: ActivityMainBinding
     private var isServiceEnabled = false
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         setupUI()
         checkServiceStatus()
     }
-    
+
     override fun onResume() {
         super.onResume()
         // 每次回到界面都检查服务状态
         checkServiceStatus()
     }
-    
+
     /**
      * 设置UI事件
      */
@@ -48,30 +48,30 @@ class MainActivity : AppCompatActivity() {
             if (isServiceEnabled) {
                 // 服务已启用，引导用户去系统设置关闭
                 openAccessibilitySettings()
-                Toast.makeText(this, "请在设置中关闭"福袋助手"服务", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "请在设置中关闭「福袋助手」服务", Toast.LENGTH_LONG).show()
             } else {
                 // 服务未启用，引导用户去开启
                 openAccessibilitySettings()
             }
         }
-        
+
         // 配置按钮
         binding.btnConfigure.setOnClickListener {
             // 打开配置界面（可设置倒计时阈值、自动输入内容等）
             Toast.makeText(this, "配置功能开发中...", Toast.LENGTH_SHORT).show()
         }
-        
+
         // 使用说明
         binding.btnHelp.setOnClickListener {
             showHelpDialog()
         }
-        
+
         // 测试OCR
         binding.btnTestOCR.setOnClickListener {
             testOCR()
         }
     }
-    
+
     /**
      * 检查无障碍服务状态
      */
@@ -80,15 +80,15 @@ class MainActivity : AppCompatActivity() {
         val enabledServices = am.getEnabledAccessibilityServiceList(
             AccessibilityServiceInfo.FEEDBACK_GENERIC
         )
-        
+
         isServiceEnabled = enabledServices.any { serviceInfo ->
             serviceInfo.resolveInfo.serviceInfo.packageName == packageName &&
             serviceInfo.resolveInfo.serviceInfo.name.contains("FudaiAccessibilityService")
         }
-        
+
         updateUI()
     }
-    
+
     /**
      * 更新UI状态
      */
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
             binding.layoutStatus.isVisible = false
         }
     }
-    
+
     /**
      * 打开无障碍设置
      */
@@ -114,8 +114,8 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
-            
-            Toast.makeText(this, "找到"福袋助手"并开启", Toast.LENGTH_LONG).show()
+
+            Toast.makeText(this, "找到「福袋助手」并开启", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             // 有些设备可能不支持直接跳转，使用备用方案
             val intent = Intent(Settings.ACTION_SETTINGS)
@@ -123,7 +123,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "请手动进入: 设置 > 无障碍 > 福袋助手", Toast.LENGTH_LONG).show()
         }
     }
-    
+
     /**
      * 显示使用说明
      */
@@ -156,26 +156,26 @@ class MainActivity : AppCompatActivity() {
             本工具仅供学习交流，请遵守平台规则
             因使用本工具导致的账号问题概不负责
         """.trimIndent()
-        
+
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("使用说明")
             .setMessage(helpText)
             .setPositiveButton("知道了", null)
             .show()
     }
-    
+
     /**
      * 测试OCR功能
      */
     private fun testOCR() {
         Toast.makeText(this, "正在测试OCR配置...", Toast.LENGTH_SHORT).show()
-        
+
         // 创建OCR管理器并测试初始化
         val ocrManager = OCRManager(this)
-        
+
         // 显示测试结果
         Toast.makeText(this, "OCR初始化完成，请查看Logcat日志", Toast.LENGTH_LONG).show()
-        
+
         // 提示用户如何查看日志
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("✅ OCR配置已更新")
