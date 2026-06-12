@@ -58,7 +58,7 @@ class FudaiAccessibilityService : AccessibilityService() {
 
         // 启动前台服务（保持后台运行）
         val intent = Intent(this, FudaiForegroundService::class.java).apply {
-            action = FudaiForegroundService.ACTION_START
+            action = "ACTION_START"
         }
         startService(intent)
 
@@ -421,7 +421,7 @@ class FudaiAccessibilityService : AccessibilityService() {
 
         // 停止前台服务
         val intent = Intent(this, FudaiForegroundService::class.java).apply {
-            action = FudaiForegroundService.ACTION_STOP
+            action = "ACTION_STOP"
         }
         startService(intent)
 
