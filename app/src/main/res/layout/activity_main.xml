@@ -31,9 +31,53 @@
             android:textSize="14sp"
             android:gravity="center"
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="32dp" />
+            android:layout_marginBottom="24dp" />
 
-        <!-- 服务状态卡片 -->
+        <!-- 无障碍服务状态卡片 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="第一步：开启无障碍服务"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tvAccessibilityStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="检查中..."
+                    android:textSize="14sp"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/text_secondary" />
+
+                <Button
+                    android:id="@+id/btnAccessibilitySettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="开启无障碍服务"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="@color/secondary"
+                    android:textColor="@color/white" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- 运行状态卡片 -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -50,8 +94,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="服务状态"
-                    android:textSize="18sp"
+                    android:text="第二步：开始运行"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
 
@@ -59,29 +103,47 @@
                     android:id="@+id/layoutStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
+                    android:orientation="vertical"
                     android:layout_marginTop="12dp"
                     android:visibility="gone">
 
                     <TextView
-                        android:id="@+id/tvStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="服务未启动"
-                        android:textSize="16sp"
-                        android:textColor="@color/error" />
+                        android:text="运行状态："
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary" />
+
+                    <TextView
+                        android:id="@+id/tvRunningStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="未运行"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvStatusDetail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_hint"
+                        android:layout_marginTop="8dp" />
 
                 </LinearLayout>
 
                 <Button
-                    android:id="@+id/btnToggleService"
+                    android:id="@+id/btnToggleRunning"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="启动服务"
+                    android:text="▶️ 开始运行"
                     android:layout_marginTop="16dp"
                     android:backgroundTint="@color/primary"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp" />
 
             </LinearLayout>
 
@@ -118,7 +180,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="✅ 自动识别直播间福袋"
+                        android:text="✅ 自动识别直播间福袋（左上角图标）"
                         android:textSize="14sp"
                         android:layout_marginBottom="8dp"
                         android:textColor="@color/text_primary" />
@@ -126,7 +188,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="✅ 倒计时≤3分钟时自动参与"
+                        android:text="✅ 自动点击"去发表评论"按钮"
                         android:textSize="14sp"
                         android:layout_marginBottom="8dp"
                         android:textColor="@color/text_primary" />
@@ -134,7 +196,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="✅ 自动完成关注/评论要求"
+                        android:text="✅ 自动输入评论并发送"
                         android:textSize="14sp"
                         android:layout_marginBottom="8dp"
                         android:textColor="@color/text_primary" />
@@ -159,12 +221,12 @@
             android:orientation="vertical">
 
             <Button
-                android:id="@+id/btnConfigure"
+                android:id="@+id/btnCheckUpdate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="⚙️ 高级配置"
+                android:text="🔄 检查更新"
                 android:layout_marginBottom="12dp"
-                android:backgroundTint="@color/secondary"
+                android:backgroundTint="@color/primary"
                 android:textColor="@color/white" />
 
             <Button

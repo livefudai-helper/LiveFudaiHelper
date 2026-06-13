@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 外部存储根目录 -->
+    <external-path
+        name="external_files"
+        path="." />
+    
+    <!-- 应用外部存储目录（Android/data/com.example.livefudai/） -->
+    <external-files-path
+        name="external_app_files"
+        path="." />
+    
+    <!-- 应用缓存目录 -->
+    <external-cache-path
+        name="external_cache"
+        path="." />
+    
+    <!-- 应用内部存储目录 -->
+    <files-path
+        name="internal_files"
+        path="." />
+    
+    <!-- 应用内部缓存目录 -->
+    <cache-path
+        name="internal_cache"
+        path="." />
+</paths>

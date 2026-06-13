@@ -52,4 +52,9 @@
     <string name="config_platform_douyin">抖音</string>
     <string name="config_platform_kuaishou">快手</string>
     <string name="config_platform_qq">QQ直播</string>
+    
+    <!-- GitHub 配置（自动更新功能） -->
+    <string name="github_user">你的用户名</string>
+    <string name="github_repo">你的仓库名</string>
+    <string name="current_version">v1.0.7</string>
 </resources>
