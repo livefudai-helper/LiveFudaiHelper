@@ -1,11 +1,12 @@
 #!/bin/sh
 
-# gradlew - Gradle Wrapper for Unix
-# 自动下载并使用Gradle
+# Gradle startup script for Unix
 
-DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
 APP_NAME="Gradle"
-APP_BASE_NAME=`basename "$0"`
+APP_BASE_NAME=$(basename "$0")
+
+# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+DEFAULT_JVM_OPTS="-Xmx64m -Xms64m"
 
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD="maximum"
@@ -22,28 +23,23 @@ die () {
 }
 
 # OS specific support
-detectOS() {
-    cygwin=false
-    msys=false
-    darwin=false
-    case "`uname`" in
-        CYGWIN* )
-            cygwin=true
-            ;;
-        MINGW* )
-            msys=true
-            ;;
-        Darwin* )
-            darwin=true
-            ;;
-    esac
-}
+case "$(uname)" in
+  CYGWIN* )
+    cygwin=true
+    ;;
+  Darwin* )
+    darwin=true
+    ;;
+  MINGW* )
+    msys=true
+    ;;
+esac
 
 # Attempt to set APP_HOME
-PRG="$0"
-detectOS
-
 # Resolve links: $0 may be a link
+PRG="$0"
+
+# Need this for relative symlinks.
 while [ -h "$PRG" ] ; do
     ls=`ls -ld "$PRG"`
     link=`expr "$ls" : '.*-> \(.*\)$'`
@@ -61,7 +57,7 @@ cd "$SAVED" >/dev/null
 
 CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
-# Determine the Java command to use
+# Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then
     if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
         JAVACMD="$JAVA_HOME/jre/sh/java"
@@ -82,10 +78,61 @@ Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
 fi
 
-# Increase Gradle memory if needed
-GRADLE_OPTS="$GRADLE_OPTS -Xmx1024m"
+# Increase the maximum file descriptors if we can.
+if [ "$cygwin" = "false" -a "$darwin" = "false" ] ; then
+    MAX_FD_LIMIT=`ulimit -H -n`
+    if [ $? -eq 0 ] ; then
+        if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
+            MAX_FD="$MAX_FD_LIMIT"
+        fi
+        ulimit -n $MAX_FD
+        if [ $? -ne 0 ] ; then
+            warn "Could not set maximum file descriptor limit: $MAX_FD"
+        fi
+    else
+        warn "Could not query maximum file descriptor limit: $MAX_FD_LIMIT"
+    fi
+fi
 
-# Execute Gradle
-exec "$JAVACMD" $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\
--Dorg.gradle.appname=$APP_BASE_NAME" \
--classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
+# For Darwin, add options to specify how the application appears in the dock
+if $darwin; then
+    GRADLE_OPTS="$GRADLE_OPTS \"-Xdock:name=$APP_NAME\" \"-Xdock:icon=$APP_HOME/media/gradle.icns\""
+fi
+
+# For Cygwin, switch paths to Windows format before running java
+if $cygwin ; then
+    APP_HOME=`cygpath --path --windows "$APP_HOME"`
+    CLASSPATH=`cygpath --path --windows "$CLASSPATH"`
+    JAVACMD=`cygpath --absolute --windows "$JAVACMD"`
+
+    # We build the pattern for arguments to be converted via cygpath
+    ROOTDIRS="$(cygpath -w /)"
+    PATTERN=" $(echo $ROOTDIRS | sed 's/ /|/g')"
+    for arg in "$@" ; do
+        case $arg in
+            -*) # cygwin path translation only for arguments starting with -  
+                ;;
+            *)  # cygwin path translation for other arguments
+                case $arg in
+                    $PATTERN )
+                        arg=`cygpath --path --windows "$arg"`
+                        ;;
+                esac
+                ;;
+        esac
+        newargs="$newargs \"$arg\""
+    done
+    eval set -- $newargs
+fi
+
+# Escape application args
+save () {
+    for i do printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\/" ; done
+    echo " "
+}
+APP_ARGS=$(save "$@")
+
+# Collect all arguments for the java command, following the shell quoting and substitution rules
+eval set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\"$APP_HOME\"" -classpath "\"$CLASSPATH\"" org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"
+
+exec "$JAVACMD" "$@"

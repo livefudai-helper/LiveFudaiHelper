@@ -1,60 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">福袋自动助手</string>
-    
-    <!-- 无障碍服务描述 -->
-    <string name="accessibility_service_description">
-        自动识别并参与直播间福袋工具。
-        \n\n功能：
-        \n• 监听直播间界面变化
-        \n• 自动识别福袋倒计时
-        \n• 倒计时≤3分钟时自动参与
-        \n• 自动完成福袋要求（关注/评论等）
-        \n\n使用方法：
-        \n1. 开启此服务
-        \n2. 打开抖音/快手等直播APP
-        \n3. 进入直播间，等待福袋出现
-        \n4. 工具会自动识别并参与
-        \n\n注意事项：
-        \n• 请保持屏幕常亮
-        \n• 过度使用可能被平台检测
-        \n• 仅供学习交流，请遵守平台规则
-    </string>
-    
-    <!-- 按钮文本 -->
-    <string name="btn_start_service">启动服务</string>
-    <string name="btn_stop_service">关闭服务</string>
-    <string name="btn_configure">高级配置</string>
-    <string name="btn_test_ocr">测试OCR</string>
-    <string name="btn_help">使用说明</string>
-    
-    <!-- 状态文本 -->
-    <string name="status_running">✅ 服务运行中</string>
-    <string name="status_stopped">❌ 服务未启动</string>
-    
-    <!-- 提示信息 -->
-    <string name="toast_open_settings">请在设置中开启"福袋助手"服务</string>
-    <string name="toast_service_started">服务已启动，正在监听直播间...</string>
-    <string name="toast_service_stopped">服务已关闭</string>
-    <string name="toast_fudai_detected">检测到福袋！正在参与...</string>
-    <string name="toast_countdown_not_reached">倒计时未到，等待中...</string>
-    <string name="toast_ocr_failed">OCR识别失败，请检查网络</string>
-    
-    <!-- 通知 -->
-    <string name="notification_title">福袋助手运行中</string>
-    <string name="notification_text">正在监听直播间福袋...</string>
-    
-    <!-- 配置项 -->
-    <string name="config_countdown_threshold">倒计时阈值（分钟）</string>
-    <string name="config_auto_input_text">自动输入内容</string>
-    <string name="config_auto_follow">自动关注</string>
-    <string name="config_auto_share">自动分享</string>
-    <string name="config_platform_douyin">抖音</string>
-    <string name="config_platform_kuaishou">快手</string>
-    <string name="config_platform_qq">QQ直播</string>
-    
-    <!-- GitHub 配置（自动更新功能） -->
-    <string name="github_user">你的用户名</string>
-    <string name="github_repo">你的仓库名</string>
-    <string name="current_version">v1.0.7</string>
+    <string name="app_name">福袋助手</string>
+    <string name="start">开始运行</string>
+    <string name="stop">停止运行</string>
+    <string name="status_ready">已就绪（点击开始运行）</string>
+    <string name="status_running">正在运行中...</string>
+    <string name="status_stopped">已停止</string>
+    <string name="toast_start">福袋助手已启动</string>
+    <string name="toast_stop">福袋助手已停止</string>
+    <string name="toast_no_accessibility">请先开启无障碍服务</string>
 </resources>

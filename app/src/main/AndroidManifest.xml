@@ -1,40 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.livefudaihelper">
 
-    <!-- 无障碍服务权限（必需） -->
-    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
-    
     <!-- 网络权限（OCR需要） -->
     <uses-permission android:name="android.permission.INTERNET" />
-    
-    <!-- 网络状态检查 -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    
-    <!-- 截屏权限（Android 5.0+） -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    
-    <!-- 保持屏幕常亮 -->
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    
-    <!-- 悬浮窗权限（可选，用于显示悬浮按钮） -->
+
+    <!-- 存储权限（截图需要，Android 9及以下） -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <!-- 悬浮窗权限 -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    
-    <!-- 前台服务权限（Android 9.0+） -->
+
+    <!-- 前台服务权限（Android 9+） -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    
-    <!-- 安装 APK 权限（Android 8.0+） -->
+
+    <!-- 安装 APK 权限（自动更新需要） -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <!-- 网络状态权限（可选，用于检查网络） -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@android:drawable/ic_dialog_info"
         android:label="@string/app_name"
         android:roundIcon="@android:drawable/ic_dialog_info"
         android:supportsRtl="true"
         android:theme="@style/Theme.LiveFudaiHelper">
-        
-        <!-- 主界面 -->
+
+        <!-- 主Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -45,7 +41,15 @@
             </intent-filter>
         </activity>
 
-        <!-- 福袋无障碍服务（核心） -->
+        <!-- 前台服务 -->
+        <service
+            android:name=".FudaiForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"
+            android:stopWithTask="false" />
+
+        <!-- 无障碍服务 -->
         <service
             android:name=".FudaiAccessibilityService"
             android:enabled="true"
@@ -54,31 +58,11 @@
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
-            
-            <!-- 无障碍服务配置（也可以通过代码动态配置） -->
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <!-- 前台服务（保持后台运行，Android 8.0+） -->
-        <service
-            android:name=".FudaiForegroundService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
-        
-        <!-- FileProvider（用于 Android 7.0+ 共享文件） -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
-        
     </application>
 
 </manifest>

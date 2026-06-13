@@ -1,264 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
-    tools:context=".MainActivity">
+    android:background="#FFF3E0">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="24dp"
+        android:gravity="center_horizontal">
 
         <!-- 标题 -->
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🎁 福袋自动助手"
+            android:text="福袋自动助手"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:gravity="center"
-            android:textColor="@color/primary"
+            android:textColor="#FF6F00"
             android:layout_marginBottom="8dp" />
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="自动识别并参与直播间福袋"
+            android:text="v12 - 倒计时识别版"
             android:textSize="14sp"
-            android:gravity="center"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="24dp" />
+            android:textColor="#999999"
+            android:layout_marginBottom="32dp" />
 
-        <!-- 无障碍服务状态卡片 -->
+        <!-- 状态卡片 -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:text="⏸️ 状态：已就绪（点击开始运行）"
+                android:textSize="16sp"
+                android:textColor="#333333"
+                android:gravity="center" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- 开始按钮 -->
+        <Button
+            android:id="@+id/btnStart"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="▶️ 开始运行"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:backgroundTint="#FF6F00"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="12dp"
+            android:stateListAnimator="@null" />
+
+        <!-- 停止按钮 -->
+        <Button
+            android:id="@+id/btnStop"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="⏹️ 停止运行"
+            android:textSize="18sp"
+            android:backgroundTint="#757575"
+            android:textColor="#FFFFFF"
             android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            android:enabled="false"
+            android:stateListAnimator="@null" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+        <!-- 检查更新按钮 -->
+        <Button
+            android:id="@+id/btnCheckUpdate"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="🔄 检查更新"
+            android:textSize="16sp"
+            android:backgroundTint="#2196F3"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="24dp"
+            android:stateListAnimator="@null" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="第一步：开启无障碍服务"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary" />
-
-                <TextView
-                    android:id="@+id/tvAccessibilityStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="检查中..."
-                    android:textSize="14sp"
-                    android:layout_marginTop="8dp"
-                    android:textColor="@color/text_secondary" />
-
-                <Button
-                    android:id="@+id/btnAccessibilitySettings"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="开启无障碍服务"
-                    android:layout_marginTop="12dp"
-                    android:backgroundTint="@color/secondary"
-                    android:textColor="@color/white" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- 运行状态卡片 -->
+        <!-- 使用说明卡片 -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvGuide"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="第二步：开始运行"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary" />
-
-                <LinearLayout
-                    android:id="@+id/layoutStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginTop="12dp"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="运行状态："
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary" />
-
-                    <TextView
-                        android:id="@+id/tvRunningStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="未运行"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="4dp" />
-
-                    <TextView
-                        android:id="@+id/tvStatusDetail"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_hint"
-                        android:layout_marginTop="8dp" />
-
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btnToggleRunning"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="▶️ 开始运行"
-                    android:layout_marginTop="16dp"
-                    android:backgroundTint="@color/primary"
-                    android:textColor="@color/white"
-                    android:textSize="18sp"
-                    android:paddingTop="12dp"
-                    android:paddingBottom="12dp" />
-
-            </LinearLayout>
-
+                android:padding="20dp"
+                android:text="使用说明加载中..."
+                android:textSize="14sp"
+                android:textColor="#555555"
+                android:lineSpacingExtra="4dp" />
         </androidx.cardview.widget.CardView>
 
-        <!-- 功能说明卡片 -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="核心功能"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:layout_marginBottom="12dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="✅ 自动识别直播间福袋（左上角图标）"
-                        android:textSize="14sp"
-                        android:layout_marginBottom="8dp"
-                        android:textColor="@color/text_primary" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="✅ 自动点击「去发表评论」按钮"
-                        android:textSize="14sp"
-                        android:layout_marginBottom="8dp"
-                        android:textColor="@color/text_primary" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="✅ 自动输入评论并发送"
-                        android:textSize="14sp"
-                        android:layout_marginBottom="8dp"
-                        android:textColor="@color/text_primary" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="✅ 支持抖音/快手/QQ直播"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_primary" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- 操作按钮 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <Button
-                android:id="@+id/btnCheckUpdate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="🔄 检查更新"
-                android:layout_marginBottom="12dp"
-                android:backgroundTint="@color/primary"
-                android:textColor="@color/white" />
-
-            <Button
-                android:id="@+id/btnTestOCR"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="🧪 测试OCR识别"
-                android:layout_marginBottom="12dp"
-                android:backgroundTint="@color/secondary"
-                android:textColor="@color/white" />
-
-            <Button
-                android:id="@+id/btnHelp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="📖 使用说明"
-                android:backgroundTint="@color/secondary"
-                android:textColor="@color/white" />
-
-        </LinearLayout>
-
-        <!-- 免责声明 -->
+        <!-- 底部信息 -->
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⚠️ 免责声明：本工具仅供学习交流，请遵守平台规则"
+            android:text="福袋助手 © 2026"
             android:textSize="12sp"
-            android:gravity="center"
-            android:textColor="@color/text_hint"
+            android:textColor="#999999"
             android:layout_marginTop="32dp" />
 
     </LinearLayout>
-
 </ScrollView>
-
