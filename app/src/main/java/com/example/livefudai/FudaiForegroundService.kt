@@ -90,7 +90,7 @@ class FudaiForegroundService : Service() {
      */
     private fun createNotification(): Notification {
         val isRunning = PreferencesManager.isServiceRunning(this)
-        val statusText = if (isRunning) "🟢 运行中，正在监听福袋..." else "🟡 已暂停，点击"开始运行"激活"
+        val statusText = if (isRunning) "🟢 运行中，正在监听福袋..." else "🟡 已暂停，点击「开始运行」激活"
         
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("福袋自动助手")

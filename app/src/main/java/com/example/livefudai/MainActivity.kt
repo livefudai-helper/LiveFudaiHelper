@@ -148,7 +148,7 @@ class MainActivity : AppCompatActivity() {
             binding.btnToggleRunning.text = "▶️ 开始运行"
             binding.btnToggleRunning.backgroundTintList = getColorStateList(android.R.color.holo_green_dark)
             binding.layoutStatus.isVisible = true
-            binding.tvStatusDetail.text = "服务已暂停，点击"开始运行"后才会自动抢福袋"
+            binding.tvStatusDetail.text = "服务已暂停，点击「开始运行」后才会自动抢福袋"
         }
     }
     

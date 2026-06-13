@@ -82,7 +82,7 @@ class FudaiAccessibilityService : AccessibilityService() {
         if (isRunning) {
             showToast("福袋助手已启动，进入直播间即可自动检测")
         } else {
-            showToast("福袋助手已连接，请点击"开始运行"")
+            showToast("福袋助手已连接，请点击「开始运行」")
         }
     }
 
