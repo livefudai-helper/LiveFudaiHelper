@@ -6,3 +6,4 @@
     android:description="@string/accessibility_description"
     android:notificationTimeout="100"
     android:packageNames="com.ss.android.ugc.aweme">
+</accessibility-service>
