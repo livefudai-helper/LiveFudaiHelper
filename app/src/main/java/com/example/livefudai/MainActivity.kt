@@ -49,9 +49,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isAccessibilityServiceEnabled(): Boolean {
-        val service = packageName + "/" + FudaiAccessibilityService::class.java.name
-        val enabledServices = Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
-        return enabledServices?.contains(service) == true
+    val am = getSystemService(ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager
+    val enabledServices = am.getEnabledAccessibilityServiceList(android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK)
+    for (service in enabledServices) {
+        if (service.resolveInfo.serviceInfo.packageName == packageName &&
+            service.resolveInfo.serviceInfo.name == FudaiAccessibilityService::class.java.name) {
+            return true
+        }
+    }
+    return false
     }
 
     private fun openAccessibilitySettings() {
