@@ -1,4 +1,4 @@
-ppackage com.example.livefudai
+package com.example.livefudai
 
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
