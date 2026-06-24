@@ -3,7 +3,7 @@ package com.example.livefudai
 import android.accessibilityservice.AccessibilityService
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Intent
+import android.graphics.Rect
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -21,6 +21,7 @@ class FudaiAccessibilityService : AccessibilityService() {
     private var eventCount = 0
     private val NOTIFICATION_ID = 1
     private val CHANNEL_ID = "fudai_channel"
+    private lateinit var clickSimulator: ClickSimulator
 
     // 福袋关键词列表
     private val fudaiKeywords = listOf("福袋", "超级福袋", "限时福袋", "全民福袋")
@@ -32,7 +33,7 @@ class FudaiAccessibilityService : AccessibilityService() {
         
         eventCount++
         
-        // 每100个事件弹一次Toast，说明服务在正常工作
+        // 每100个事件打一次日志
         if (eventCount % 100 == 0) {
             Timber.d("已处理 $eventCount 个事件")
         }
@@ -54,21 +55,20 @@ class FudaiAccessibilityService : AccessibilityService() {
         Timber.d("无障碍服务已连接")
         isMonitoring = true
         eventCount = 0
+        clickSimulator = ClickSimulator(this)
         
-        // 启动前台服务（通知栏显示"正在运行"）
+        // 启动前台服务
         startForegroundService()
         
-        // 弹Toast提示
         Toast.makeText(this, "✅ 福袋助手已启动，正在监听...", Toast.LENGTH_LONG).show()
         
         Timber.d("前台服务已启动，通知栏可见")
     }
 
     /**
-     * 启动前台服务，在通知栏显示常驻通知
+     * 启动前台服务
      */
     private fun startForegroundService() {
-        // 创建通知渠道（Android 8.0+ 需要）
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
@@ -81,16 +81,14 @@ class FudaiAccessibilityService : AccessibilityService() {
             notificationManager.createNotificationChannel(channel)
         }
         
-        // 构建通知
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("福袋助手")
             .setContentText("正在监听抖音福袋...")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true) // 常驻通知，不能被滑动删除
+            .setOngoing(true)
             .build()
         
-        // 启动前台服务
         startForeground(NOTIFICATION_ID, notification)
     }
 
@@ -104,49 +102,74 @@ class FudaiAccessibilityService : AccessibilityService() {
         val rootNode = rootInActiveWindow ?: return
         
         try {
-            // 方法1：查找包含福袋关键词的文字节点
+            // 方法1：通过福袋关键词查找
             for (keyword in fudaiKeywords) {
                 val fudaiNodes = findNodesByText(rootNode, keyword)
                 if (fudaiNodes.isNotEmpty()) {
-                    Timber.d("找到福袋节点（关键词：$keyword），数量: ${fudaiNodes.size}")
+                    Timber.d("方法1找到福袋节点（关键词：$keyword），数量: ${fudaiNodes.size}")
                     
-                    // 弹Toast提示
-                    Toast.makeText(this, "🎯 检测到福袋！正在点击...", Toast.LENGTH_SHORT).show()
-                    
-                    // 震动一下
-                    vibrate(100)
-                    
-                    // 点击第一个可点击的福袋节点
+                    // 找第一个能获取到坐标的节点
                     for (node in fudaiNodes) {
-                        if (node.isClickable) {
-                            node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                        val rect = getNodeRect(node)
+                        if (rect != null && rect.width() > 0 && rect.height() > 0) {
+                            val x = rect.centerX()
+                            val y = rect.centerY()
+                            
+                            Toast.makeText(this, "🎯 检测到福袋！点击坐标($x, $y)", Toast.LENGTH_SHORT).show()
+                            vibrate(100)
+                            
+                            clickSimulator.click(x, y)
                             lastClickTime = currentTime
-                            Timber.d("点击了福袋节点")
+                            Timber.d("点击福袋成功，坐标: ($x, $y)")
                             return
-                        }
-                        // 如果节点本身不可点击，找它的可点击父节点
-                        var parent = node.parent
-                        while (parent != null) {
-                            if (parent.isClickable) {
-                                parent.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                                lastClickTime = currentTime
-                                Timber.d("点击了福袋父节点")
-                                return
-                            }
-                            parent = parent.parent
                         }
                     }
                 }
             }
             
-            // 方法2：查找倒计时节点（格式：09:33）
+            // 方法2：通过倒计时查找（格式：09:33）
             val countdownNodes = findNodesByRegex(rootNode, "\\d{2}:\\d{2}".toRegex())
             if (countdownNodes.isNotEmpty()) {
-                Timber.d("找到倒计时节点，数量: ${countdownNodes.size}")
+                Timber.d("方法2找到倒计时节点，数量: ${countdownNodes.size}")
+                
+                // 找第一个能获取到坐标的节点，点击它的父区域
+                for (node in countdownNodes) {
+                    val rect = getNodeRect(node)
+                    if (rect != null && rect.width() > 0 && rect.height() > 0) {
+                        // 点击倒计时上方一点的位置（福袋图标位置）
+                        val x = rect.centerX()
+                        val y = rect.top - rect.height() // 往上偏移一个节点高度
+                        
+                        if (y > 0) {
+                            Toast.makeText(this, "⏰ 检测到倒计时！点击福袋($x, $y)", Toast.LENGTH_SHORT).show()
+                            vibrate(100)
+                            
+                            clickSimulator.click(x, y)
+                            lastClickTime = currentTime
+                            Timber.d("通过倒计时点击福袋成功，坐标: ($x, $y)")
+                            return
+                        }
+                    }
+                }
             }
             
         } catch (e: Exception) {
             Timber.e(e, "检测福袋时出错")
+            Toast.makeText(this, "❌ 检测出错: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * 获取节点在屏幕上的位置
+     */
+    private fun getNodeRect(node: AccessibilityNodeInfo): Rect? {
+        return try {
+            val rect = Rect()
+            node.getBoundsInScreen(rect)
+            rect
+        } catch (e: Exception) {
+            Timber.e(e, "获取节点坐标失败")
+            null
         }
     }
 
@@ -164,13 +187,11 @@ class FudaiAccessibilityService : AccessibilityService() {
         text: String,
         result: MutableList<AccessibilityNodeInfo>
     ) {
-        // 检查 text
         val nodeText = node.text
         if (nodeText != null && nodeText.contains(text)) {
             result.add(node)
         }
         
-        // 检查 contentDescription
         val nodeDesc = node.contentDescription
         if (nodeDesc != null && nodeDesc.contains(text)) {
             result.add(node)
