@@ -24,14 +24,13 @@ class FudaiAccessibilityService : AccessibilityService() {
     private val CHANNEL_ID = "fudai_channel"
     private lateinit var clickSimulator: ClickSimulator
 
-    private val fudaiKeywords = listOf("福袋", "超级福袋", "限时福袋", "全民福袋", "锦鲤", "免费抽", "福")
+    private val fudaiKeywords = listOf("福袋", "超级福袋", "限时福袋", "全民福袋", "锦鲤", "福")
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (!isMonitoring) return
         event ?: return
         eventCount++
 
-        // 每5秒弹一次调试信息
         val now = System.currentTimeMillis()
         if (now - lastDebugTime > 5000) {
             lastDebugTime = now
@@ -87,9 +86,6 @@ class FudaiAccessibilityService : AccessibilityService() {
         startForeground(NOTIFICATION_ID, notification)
     }
 
-    /**
-     * 调试：dump节点信息
-     */
     private fun dumpNodeInfo() {
         val rootNode = rootInActiveWindow
         if (rootNode == null) {
@@ -97,14 +93,28 @@ class FudaiAccessibilityService : AccessibilityService() {
             return
         }
 
-        val allTexts = mutableListOf<String>()
-        val allDescs = mutableListOf<String>()
+        val screenWidth = resources.displayMetrics.widthPixels
+        val screenHeight = resources.displayMetrics.heightPixels
+
+        val allTexts = mutableListOf<Pair<String, Rect>>() // 文字+坐标
         var totalNodes = 0
 
         fun traverse(node: AccessibilityNodeInfo) {
             totalNodes++
-            node.text?.let { if (it.isNotBlank()) allTexts.add(it.toString()) }
-            node.contentDescription?.let { if (it.isNotBlank()) allDescs.add(it.toString()) }
+            val rect = Rect()
+            try {
+                node.getBoundsInScreen(rect)
+            } catch (e: Exception) {
+                // 忽略
+            }
+
+            node.text?.let {
+                if (it.isNotBlank()) allTexts.add(Pair(it.toString(), rect))
+            }
+            node.contentDescription?.let {
+                if (it.isNotBlank()) allTexts.add(Pair(it.toString(), rect))
+            }
+
             for (i in 0 until node.childCount) {
                 node.getChild(i)?.let { traverse(it) }
             }
@@ -112,31 +122,31 @@ class FudaiAccessibilityService : AccessibilityService() {
 
         traverse(rootNode)
 
-        // 找包含"袋"或"福"或倒计时格式的文字
-        val fudaiRelated = allTexts.filter {
-            it.contains("袋") || it.contains("福") || it.contains("锦鲤") ||
-            Regex("\\d{1,2}:\\d{2}").matches(it) ||
-            Regex("\\d{2,3}秒").matches(it)
+        // 找出左上角区域（左30%，上25%）的所有文字
+        val leftTopArea = allTexts.filter { (_, rect) ->
+            rect.centerX() < screenWidth * 0.3 &&
+            rect.centerY() < screenHeight * 0.25 &&
+            rect.width() > 0 && rect.height() > 0
         }
 
-        val descRelated = allDescs.filter {
-            it.contains("袋") || it.contains("福") || it.contains("锦鲤")
+        // 找出其中包含福袋关键词的
+        val fudaiInLeftTop = leftTopArea.filter { (text, _) ->
+            fudaiKeywords.any { text.contains(it) }
         }
 
-        val countdownLike = allTexts.filter {
-            Regex("\\d{1,2}:\\d{2}").matches(it) ||
-            Regex("\\d{2,3}秒").matches(it) ||
-            (it.length <= 3 && it.all { c -> c.isDigit() })
+        // 找出倒计时格式的
+        val countdownInLeftTop = leftTopArea.filter { (text, _) ->
+            Regex("\\d{1,2}:\\d{2}").matches(text) ||
+            Regex("\\d{2,3}秒").matches(text) ||
+            (text.length <= 3 && text.all { c -> c.isDigit() })
         }
 
-        Timber.d("调试：总节点数=$totalNodes, 文字节点=${allTexts.size}, contentDesc=${allDescs.size}")
-        Timber.d("调试：福袋相关文字=$fudaiRelated")
-        Timber.d("调试：福袋相关描述=$descRelated")
-        Timber.d("调试：疑似倒计时=$countdownLike")
+        Timber.d("调试：总节点=$totalNodes, 左上角文字=${leftTopArea.size}")
+        Timber.d("调试：左上角福袋相关=$fudaiInLeftTop")
+        Timber.d("调试：左上角倒计时=$countdownInLeftTop")
 
-        // 弹Toast显示关键信息
-        val debugMsg = "节点:$totalNodes | 福袋相关:${fudaiRelated.size + descRelated.size} | 倒计时:${countdownLike.size}"
-        Toast.makeText(this, debugMsg, Toast.LENGTH_SHORT).show()
+        val msg = "左上文字:${leftTopArea.size} | 福袋:${fudaiInLeftTop.size} | 倒计时:${countdownInLeftTop.size}"
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
     private fun checkAndClickFudai() {
@@ -146,61 +156,103 @@ class FudaiAccessibilityService : AccessibilityService() {
         val rootNode = rootInActiveWindow ?: return
 
         try {
-            // 方法1：通过福袋关键词查找
+            val screenWidth = resources.displayMetrics.widthPixels
+            val screenHeight = resources.displayMetrics.heightPixels
+
+            // 只在左上角区域搜索（左30%，上25%）
+            val searchLeft = 0
+            val searchTop = 0
+            val searchRight = (screenWidth * 0.3).toInt()
+            val searchBottom = (screenHeight * 0.25).toInt()
+
+            // 方法1：找福袋关键词
+            val fudaiCandidates = mutableListOf<Pair<AccessibilityNodeInfo, String>>()
+
             for (keyword in fudaiKeywords) {
-                val fudaiNodes = findNodesByText(rootNode, keyword)
-                if (fudaiNodes.isNotEmpty()) {
-                    Timber.d("方法1找到节点（关键词：$keyword），数量: ${fudaiNodes.size}")
-
-                    for (node in fudaiNodes) {
-                        val rect = getNodeRect(node)
-                        if (rect != null && rect.width() > 0 && rect.height() > 0) {
-                            val x = rect.centerX()
-                            val y = rect.centerY()
-
-                            Toast.makeText(this, "🎯 方法1命中！点击($x, $y)", Toast.LENGTH_SHORT).show()
-                            vibrate(100)
-
-                            clickSimulator.click(x, y)
-                            lastClickTime = currentTime
-                            Timber.d("点击成功，坐标: ($x, $y)")
-                            return
+                val nodes = findNodesByText(rootNode, keyword)
+                for (node in nodes) {
+                    val rect = getNodeRect(node)
+                    if (rect != null && rect.width() > 0 && rect.height() > 0) {
+                        // 只考虑左上角区域
+                        if (rect.centerX() in searchLeft..searchRight &&
+                            rect.centerY() in searchTop..searchBottom) {
+                            fudaiCandidates.add(Pair(node, keyword))
                         }
                     }
                 }
             }
 
-            // 方法2：通过倒计时查找（多种格式）
+            if (fudaiCandidates.isNotEmpty()) {
+                // 选最靠上的
+                fudaiCandidates.sortBy { getNodeRect(it.first)?.top ?: Int.MAX_VALUE }
+                val best = fudaiCandidates.first()
+                val rect = getNodeRect(best.first)!!
+
+                // 点击文字的左上方（福袋图标在文字左上方）
+                val x = rect.left - rect.width() * 1.5f
+                val y = rect.centerY() - rect.height() * 0.5f
+
+                val clickX = x.toInt().coerceAtLeast(10)
+                val clickY = y.toInt().coerceAtLeast(10)
+
+                Toast.makeText(this, "🎯 文字命中[${best.second}] 点击($clickX, $clickY)", Toast.LENGTH_SHORT).show()
+                vibrate(100)
+
+                clickSimulator.click(clickX, clickY)
+                lastClickTime = currentTime
+                Timber.d("文字命中点击，关键词: ${best.second}, 坐标: ($clickX, $clickY)")
+                return
+            }
+
+            // 方法2：找倒计时
             val countdownPatterns = listOf(
-                "\\d{1,2}:\\d{2}".toRegex(),  // 9:33 或 09:33
-                "\\d{2,3}秒".toRegex(),       // 599秒
-                "\\d{2,3}".toRegex()          // 纯数字秒数
+                "\\d{1,2}:\\d{2}".toRegex(),
+                "\\d{2,3}秒".toRegex(),
+                "\\d{2,3}".toRegex()
             )
 
+            val countdownCandidates = mutableListOf<AccessibilityNodeInfo>()
+
             for (pattern in countdownPatterns) {
-                val countdownNodes = findNodesByRegex(rootNode, pattern)
-                if (countdownNodes.isNotEmpty()) {
-                    Timber.d("方法2找到倒计时节点（模式：$pattern），数量: ${countdownNodes.size}")
-
-                    for (node in countdownNodes) {
-                        val rect = getNodeRect(node)
-                        if (rect != null && rect.width() > 0 && rect.height() > 0) {
-                            val x = rect.centerX()
-                            val y = rect.top - rect.height()
-
-                            if (y > 0) {
-                                Toast.makeText(this, "⏰ 方法2命中！点击($x, $y)", Toast.LENGTH_SHORT).show()
-                                vibrate(100)
-
-                                clickSimulator.click(x, y)
-                                lastClickTime = currentTime
-                                Timber.d("通过倒计时点击成功，坐标: ($x, $y)")
-                                return
-                            }
+                val nodes = findNodesByRegex(rootNode, pattern)
+                for (node in nodes) {
+                    val rect = getNodeRect(node)
+                    if (rect != null && rect.width() > 0 && rect.height() > 0) {
+                        if (rect.centerX() in searchLeft..searchRight &&
+                            rect.centerY() in searchTop..searchBottom) {
+                            countdownCandidates.add(node)
                         }
                     }
                 }
             }
+
+            if (countdownCandidates.isNotEmpty()) {
+                countdownCandidates.sortBy { getNodeRect(it)?.top ?: Int.MAX_VALUE }
+                val best = countdownCandidates.first()
+                val rect = getNodeRect(best)!!
+
+                // 点击倒计时正上方（福袋图标位置）
+                val x = rect.centerX()
+                val y = rect.top - rect.height() * 2
+
+                val clickY = y.toInt().coerceAtLeast(10)
+
+                Toast.makeText(this, "⏰ 倒计时命中 点击($x, $clickY)", Toast.LENGTH_SHORT).show()
+                vibrate(100)
+
+                clickSimulator.click(x, clickY)
+                lastClickTime = currentTime
+                Timber.d("倒计时命中点击，坐标: ($x, $clickY)")
+                return
+            }
+
+            // 方法3：盲点击——直接点左上角固定位置（相对坐标）
+            // 福袋大约在屏幕宽度8%，高度12%的位置
+            val blindX = (screenWidth * 0.08f).toInt()
+            val blindY = (screenHeight * 0.12f).toInt()
+
+            // 这个方法不自动点击，只在调试时显示
+            // 如果前两个方法都不行，我们再启用盲点击
 
         } catch (e: Exception) {
             Timber.e(e, "检测福袋时出错")
