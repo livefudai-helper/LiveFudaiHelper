@@ -5,6 +5,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.graphics.Rect
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.accessibility.AccessibilityEvent
@@ -23,6 +25,11 @@ class FudaiAccessibilityService : AccessibilityService() {
     private val NOTIFICATION_ID = 1
     private val CHANNEL_ID = "fudai_channel"
     private lateinit var clickSimulator: ClickSimulator
+    private val colorMatcher = ColorMatcher()
+    private var isImageChecking = false
+    private var lastImageCheckTime = 0L
+    private val IMAGE_CHECK_INTERVAL = 2000L // 图像检测间隔，2秒一次
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private val fudaiKeywords = listOf("福袋", "超级福袋", "限时福袋", "全民福袋", "锦鲤", "福")
 
@@ -142,10 +149,13 @@ class FudaiAccessibilityService : AccessibilityService() {
         }
 
         Timber.d("调试：总节点=$totalNodes, 左上角文字=${leftTopArea.size}")
+        Timber.d("调试：左上角文字内容=${leftTopArea.map { it.first }}")
         Timber.d("调试：左上角福袋相关=$fudaiInLeftTop")
         Timber.d("调试：左上角倒计时=$countdownInLeftTop")
 
-        val msg = "左上文字:${leftTopArea.size} | 福袋:${fudaiInLeftTop.size} | 倒计时:${countdownInLeftTop.size}"
+        // 显示左上角前5个文字内容，方便调试
+        val topTexts = leftTopArea.take(5).joinToString(" | ") { it.first.take(8) }
+        val msg = "左上:${leftTopArea.size} 福袋:${fudaiInLeftTop.size} 倒计:${countdownInLeftTop.size}\n$topTexts"
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
@@ -246,13 +256,57 @@ class FudaiAccessibilityService : AccessibilityService() {
                 return
             }
 
-            // 方法3：盲点击——直接点左上角固定位置（相对坐标）
+            // 方法3：图像识别（通过颜色匹配找福袋图标）
+            val sm = screenshotManager
+            if (sm != null) {
+                val now = System.currentTimeMillis()
+                if (!isImageChecking && now - lastImageCheckTime > IMAGE_CHECK_INTERVAL) {
+                    isImageChecking = true
+                    lastImageCheckTime = now
+
+                    // 在后台线程截图和匹配，避免阻塞主线程
+                    Thread {
+                        try {
+                            val regionWidth = (screenWidth * 0.3f).toInt()
+                            val regionHeight = (screenHeight * 0.25f).toInt()
+
+                            val bitmap = sm.takeScreenshotRegion(0, 0, regionWidth, regionHeight)
+                            if (bitmap != null) {
+                                val searchRect = Rect(0, 0, regionWidth, regionHeight)
+                                val result = colorMatcher.findFudai(bitmap, searchRect)
+
+                                if (result != null) {
+                                    val x = result.first
+                                    val y = result.second
+
+                                    // 点击福袋中心
+                                    mainHandler.post {
+                                        Toast.makeText(this, "🖼️ 图像识别命中！点击($x, $y)", Toast.LENGTH_SHORT).show()
+                                        vibrate(100)
+                                        clickSimulator.click(x, y)
+                                        lastClickTime = now
+                                        Timber.d("图像识别点击成功，坐标: ($x, $y)")
+                                    }
+                                }
+
+                                bitmap.recycle()
+                            }
+                        } catch (e: Exception) {
+                            Timber.e(e, "图像检测出错")
+                        } finally {
+                            isImageChecking = false
+                        }
+                    }.start()
+                }
+            }
+
+            // 方法4：盲点击——直接点左上角固定位置（相对坐标）
             // 福袋大约在屏幕宽度8%，高度12%的位置
             val blindX = (screenWidth * 0.08f).toInt()
             val blindY = (screenHeight * 0.12f).toInt()
 
             // 这个方法不自动点击，只在调试时显示
-            // 如果前两个方法都不行，我们再启用盲点击
+            // 如果前三个方法都不行，我们再启用盲点击
 
         } catch (e: Exception) {
             Timber.e(e, "检测福袋时出错")
@@ -340,6 +394,8 @@ class FudaiAccessibilityService : AccessibilityService() {
     companion object {
         var instance: FudaiAccessibilityService? = null
             private set
+
+        var screenshotManager: ScreenshotManager? = null
     }
 
     init {
