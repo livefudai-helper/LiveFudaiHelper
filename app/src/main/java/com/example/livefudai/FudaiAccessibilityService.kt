@@ -305,8 +305,14 @@ class FudaiAccessibilityService : AccessibilityService() {
             val blindX = (screenWidth * 0.08f).toInt()
             val blindY = (screenHeight * 0.12f).toInt()
 
-            // 这个方法不自动点击，只在调试时显示
-            // 如果前三个方法都不行，我们再启用盲点击
+            if (enableBlindClick) {
+                Toast.makeText(this, "👆 盲点击: ($blindX, $blindY)", Toast.LENGTH_SHORT).show()
+                vibrate(100)
+                clickSimulator.click(blindX, blindY)
+                lastClickTime = currentTime
+                Timber.d("盲点击，坐标: ($blindX, $blindY)")
+                return
+            }
 
         } catch (e: Exception) {
             Timber.e(e, "检测福袋时出错")
@@ -396,6 +402,7 @@ class FudaiAccessibilityService : AccessibilityService() {
             private set
 
         var screenshotManager: ScreenshotManager? = null
+        var enableBlindClick = false // 盲点击开关
     }
 
     init {
