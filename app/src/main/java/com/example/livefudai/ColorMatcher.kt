@@ -13,12 +13,12 @@ import kotlin.math.min
 class ColorMatcher {
 
     // 紫色的RGB范围（福袋图标是紫色的）
-    private val purpleMinRed = 120
-    private val purpleMaxRed = 255
-    private val purpleMinGreen = 30
-    private val purpleMaxGreen = 160
-    private val purpleMinBlue = 150
-    private val purpleMaxBlue = 255
+    private var purpleMinRed = 120
+    private var purpleMaxRed = 255
+    private var purpleMinGreen = 30
+    private var purpleMaxGreen = 160
+    private var purpleMinBlue = 150
+    private var purpleMaxBlue = 255
 
     // 滑动窗口大小（福袋图标的大致尺寸）
     private val windowSize = 120
