@@ -1,0 +1,95 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Download Gradle
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-7.5-bin.zip -O /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /opt
+          echo "/opt/gradle-7.5/bin" >> $GITHUB_PATH
+
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper
+
+      - name: Restore template PNGs from base64
+        run: |
+          mkdir -p app/src/main/assets/templates
+          for f in asset_b64/*.png.b64; do
+            [ -f "$f" ] || continue
+            bname=$(basename "$f" .b64)
+            base64 -d "$f" > "app/src/main/assets/templates/$bname"
+          done
+          echo "Restored templates:"; ls -la app/src/main/assets/templates/
+
+      - name: Verify template integrity (SHA256)
+        run: |
+          declare -A expected
+          expected["exsupper.png"]="eb86da107f58f81c6ddfe570b9f1ed78919fe9f5474b067af741e6bf71a3387d"
+          expected["find.png"]="556419e47acba0ace115e411384435fbe1ea8726c125e552681c910a0d2815a3"
+          expected["musupper.png"]="ce08aca85fb13dcc6deda82b3c049918201f1082720e14b6135275affe5325d3"
+          expected["normal.png"]="98c946973dd2e70b4207c8e202fa671f1080bbd7d9dd68c0a2e4b33b4e023eae"
+          expected["redreward.png"]="0bfedfca3639247aaaa671a4d3fcd90747d7787c013e11638b8965e015e26cb0"
+          expected["super.png"]="c6d3302ff70839f03db56bed915b48abfe4d66c6a39667673200f21bb438503f"
+          expected["super2.png"]="6aa699380f050b81ecbf801b720d5a8949609aad375a675faabc52406dcabb3a"
+          for f in app/src/main/assets/templates/*.png; do
+            name=$(basename "$f")
+            actual=$(sha256sum "$f" | awk '{print $1}')
+            if [ "${expected[$name]:-UNKNOWN}" != "$actual" ]; then
+              echo "ERROR: $name sha256 mismatch (got $actual, expected ${expected[$name]:-none})"
+              exit 1
+            fi
+            echo "OK: $name"
+          done
+          echo "All templates verified OK"
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        id: build
+        run: ./gradlew assembleDebug
+
+      - name: Capture build failure log
+        if: failure()
+        run: |
+          ./gradlew assembleDebug > build_error.log 2>&1 || true
+          tail -n 250 build_error.log > failure_note.md
+
+      - name: Create Release on success
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "debug-build-${{ github.run_number }}" \
+            app/build/outputs/apk/debug/app-debug.apk \
+            --title "Debug APK (run ${{ github.run_number }})" \
+            --notes "Automated debug build succeeded. APK attached."
+
+      - name: Create Release on failure (diagnostics)
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "debug-build-${{ github.run_number }}" \
+            --title "Build FAILED (run ${{ github.run_number }})" \
+            --notes-file failure_note.md

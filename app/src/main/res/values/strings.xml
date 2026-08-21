@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">福袋助手</string>
+    <string name="accessibility_description">屏幕内容识别与自动化操作工具，用于学习研究安卓无障碍服务、图像识别、自动化操作等技术</string>
+</resources>

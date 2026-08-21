@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="检查无障碍服务状态..."
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/enable_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="开启无障碍服务"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/screenshot_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="开启截图识别"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/screenshot_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="截图识别：未开启"
+            android:textSize="14sp"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/blind_click_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="开启盲点击模式"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/blind_click_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="盲点击：未开启"
+            android:textSize="14sp"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/test_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="测试 OCR"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="— 任务开关（移植自福多多设置）—"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <Switch
+            android:id="@+id/switch_follow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自动关注主播" />
+
+        <Switch
+            android:id="@+id/switch_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自动发表评论" />
+
+        <Switch
+            android:id="@+id/switch_like"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自动点赞" />
+
+        <Switch
+            android:id="@+id/switch_fansclub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="自动加粉丝团（谨慎，可能扣钻石）" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="— 概率触发（直播间养号，%）—"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="点赞触发概率" />
+
+            <EditText
+                android:id="@+id/edit_like_prob"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLength="3" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="评论触发概率" />
+
+            <EditText
+                android:id="@+id/edit_comment_prob"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLength="3" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="— 每日上限 —"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="超级福袋每日最多" />
+
+            <EditText
+                android:id="@+id/edit_super_limit"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="抖币福袋每日最多" />
+
+            <EditText
+                android:id="@+id/edit_coin_limit"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="每日最多关注" />
+
+            <EditText
+                android:id="@+id/edit_follow_limit"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="— 评论内容（每句以 / 隔开）—"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/edit_comments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:minLines="2" />
+
+    </LinearLayout>
+</ScrollView>
