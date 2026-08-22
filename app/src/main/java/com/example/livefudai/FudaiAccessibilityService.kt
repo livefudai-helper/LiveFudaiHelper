@@ -31,6 +31,11 @@ class FudaiAccessibilityService : AccessibilityService() {
     private var isMonitoring = false
     private var lastClickTime = 0L
     private val CLICK_COOLDOWN = 5000L
+    // 盲点击兜底：独立冷却 + 连点计数，避免无限刷同一个固定点
+    private var lastBlindClickTime = 0L
+    private val BLIND_CLICK_COOLDOWN = 10000L
+    private var blindClickCount = 0
+    private val BLIND_CLICK_MAX = 30
     private var eventCount = 0
     private var lastDebugTime = 0L
     private val NOTIFICATION_ID = 1
@@ -100,6 +105,11 @@ class FudaiAccessibilityService : AccessibilityService() {
         FudaiConfig.init(this)
 
         startForegroundService()
+
+        // 未开启截图识别时主动提示：图像找福袋（福多多方案）是最可靠的检测路径
+        if (screenshotManager == null) {
+            Toast.makeText(this, "💡 未开启截图识别：请在 App 内点「开启截图识别」授权，以启用图像找福袋", Toast.LENGTH_LONG).show()
+        }
 
         Toast.makeText(this, "✅ 福袋助手已启动（含自动关注/评论/点赞）", Toast.LENGTH_LONG).show()
         Timber.d("前台服务已启动")
@@ -198,10 +208,11 @@ class FudaiAccessibilityService : AccessibilityService() {
             val screenWidth = resources.displayMetrics.widthPixels
             val screenHeight = resources.displayMetrics.heightPixels
 
+            // 搜索区域：覆盖直播间上半屏全宽（福袋横幅常驻顶部区域，抖音改版也不易失效）
             val searchLeft = 0
             val searchTop = 0
-            val searchRight = (screenWidth * 0.3).toInt()
-            val searchBottom = (screenHeight * 0.25).toInt()
+            val searchRight = screenWidth
+            val searchBottom = (screenHeight * 0.45).toInt()
 
             // 方法1：找福袋关键词
             val fudaiCandidates = mutableListOf<Pair<AccessibilityNodeInfo, String>>()
@@ -226,6 +237,7 @@ class FudaiAccessibilityService : AccessibilityService() {
                 vibrate(100)
                 clickSimulator.click(x, y)
                 lastClickTime = currentTime
+                blindClickCount = 0
                 Timber.d("文字命中点击，关键词: ${best.second}, 坐标: ($x, $y)")
                 return true
             }
@@ -254,6 +266,7 @@ class FudaiAccessibilityService : AccessibilityService() {
                 vibrate(100)
                 clickSimulator.click(x, y)
                 lastClickTime = currentTime
+                blindClickCount = 0
                 Timber.d("倒计时命中点击，坐标: ($x, $y)")
                 return true
             }
@@ -267,8 +280,8 @@ class FudaiAccessibilityService : AccessibilityService() {
                     lastImageCheckTime = now
                     Thread {
                         try {
-                            val regionWidth = (screenWidth * 0.3f).toInt()
-                            val regionHeight = (screenHeight * 0.25f).toInt()
+                            val regionWidth = screenWidth
+                            val regionHeight = (screenHeight * 0.45f).toInt()
                             val bitmap = sm.takeScreenshotRegion(0, 0, regionWidth, regionHeight)
                             if (bitmap != null) {
                                 val searchRect = Rect(0, 0, regionWidth, regionHeight)
@@ -309,15 +322,29 @@ class FudaiAccessibilityService : AccessibilityService() {
                 }
             }
 
-            // 方法4：盲点击（仅当开关打开）
+            // 方法4：盲点击（手动兜底，仅当开关打开；禁止无限刷同一个固定点）
             if (enableBlindClick) {
+                // 盲点击有独立冷却，避免每个无障碍事件都触发
+                if (currentTime - lastBlindClickTime < BLIND_CLICK_COOLDOWN) return false
+                lastBlindClickTime = currentTime
+                blindClickCount++
                 val blindX = (screenWidth * 0.08f).toInt()
                 val blindY = (screenHeight * 0.12f).toInt()
-                Toast.makeText(this, "👆 盲点击: ($blindX, $blindY)", Toast.LENGTH_SHORT).show()
+                // 连续盲点击过多仍未命中福袋，自动关闭以免误触
+                if (blindClickCount > BLIND_CLICK_MAX) {
+                    enableBlindClick = false
+                    Toast.makeText(this, "⚠️ 盲点击已自动关闭（连续 $blindClickCount 次未检测到福袋，请检查截图/文字识别）", Toast.LENGTH_LONG).show()
+                    Timber.w("盲点击自动关闭，count=$blindClickCount")
+                    return false
+                }
+                // 仅每 5 次提示一次，减少刷屏
+                if (blindClickCount % 5 == 1) {
+                    Toast.makeText(this, "👆 盲点击兜底 ($blindX,$blindY) 第${blindClickCount}次", Toast.LENGTH_SHORT).show()
+                }
                 vibrate(100)
                 clickSimulator.click(blindX, blindY)
                 lastClickTime = currentTime
-                Timber.d("盲点击，坐标: ($blindX, $blindY)")
+                Timber.d("盲点击，坐标: ($blindX, $blindY) count=$blindClickCount")
                 return true
             }
         } catch (e: Exception) {
