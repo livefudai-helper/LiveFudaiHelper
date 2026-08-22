@@ -22,14 +22,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Download Gradle
+      - name: Download and install Gradle 7.5 (used directly, no wrapper re-download)
         run: |
           wget -q https://services.gradle.org/distributions/gradle-7.5-bin.zip -O /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /opt
-          echo "/opt/gradle-7.5/bin" >> $GITHUB_PATH
-
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper
+          /opt/gradle-7.5/bin/gradle --version
 
       - name: Restore template PNGs from base64
         run: |
@@ -62,17 +59,14 @@ jobs:
           done
           echo "All templates verified OK"
 
-      - name: Grant execute permission to gradlew
-        run: chmod +x gradlew
-
-      - name: Build debug APK
+      - name: Build debug APK (installed Gradle directly, skip wrapper download)
         id: build
-        run: ./gradlew assembleDebug
+        run: /opt/gradle-7.5/bin/gradle assembleDebug --no-daemon
 
       - name: Capture build failure log
         if: failure()
         run: |
-          ./gradlew assembleDebug > build_error.log 2>&1 || true
+          /opt/gradle-7.5/bin/gradle assembleDebug --no-daemon > build_error.log 2>&1 || true
           tail -n 250 build_error.log > failure_note.md
 
       - name: Create Release on success
