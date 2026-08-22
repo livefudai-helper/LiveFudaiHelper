@@ -3,6 +3,7 @@ package com.example.livefudai
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.accessibility.AccessibilityNodeInfo
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import timber.log.Timber
 import kotlin.random.Random
 
@@ -230,7 +231,7 @@ class AutoFollowComment(private val service: FudaiAccessibilityService) {
         fun traverse(node: AccessibilityNodeInfo) {
             if (found != null) return
             val cls = node.className?.toString() ?: ""
-            val hint = node.hint?.toString() ?: ""
+            val hint = AccessibilityNodeInfoCompat.wrap(node).hintText?.toString() ?: ""
             val vid = node.viewIdResourceName ?: ""
             val isEdit = cls.contains("EditText")
             val hintOk = hint.contains("说点什么") || hint.contains("评论") ||
